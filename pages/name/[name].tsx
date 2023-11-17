@@ -1,20 +1,24 @@
-import pokeApi from "@/api/pokeApi";
-import { Layout } from "@/components/layouts";
-import { Pokemon, PokemonListResponse } from "@/interfaces";
-import { getPokemonInfo, localFavorites } from "@/utils";
-import { Button, Card, CardBody, CardHeader, Image } from "@nextui-org/react";
+import { useEffect, useState } from "react";
+
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { useState } from "react";
-import confetti from "canvas-confetti";
+
+import { Button, Card, CardBody, CardHeader, Image } from "@nextui-org/react";
+
+import { Layout } from "@/components/layouts";
+import { HeartIcon } from "@/components/icons/HeartIcon";
+
+import type { Pokemon, PokemonListResponse } from "@/interfaces";
+
+import { confetti } from "@/lib";
+import { getPokemonInfo, localFavorites } from "@/utils";
+import { pokeApi } from "@/api";
 
 interface Props {
   pokemon: Pokemon;
 }
 
 const PokemonByNamePage: NextPage<Props> = ({ pokemon }) => {
-  const [isInFavorites, setIsInFavorites] = useState(
-    localFavorites.existInFavorites(pokemon.id)
-  );
+  const [isInFavorites, setIsInFavorites] = useState<boolean>(false);
 
   const onToggleFavorite = () => {
     localFavorites.toggleFavorite(pokemon.id);
@@ -22,22 +26,20 @@ const PokemonByNamePage: NextPage<Props> = ({ pokemon }) => {
 
     if (isInFavorites) return;
 
-    confetti({
-      zIndex: 999,
-      particleCount: 100,
-      spread: 160,
-      angle: -100,
-      origin: {
-        x: 0.8,
-        y: 0.04,
-      },
-    });
+    confetti();
   };
+
+  useEffect(() => {
+    setIsInFavorites(localFavorites.existInFavorites(pokemon.id));
+  }, [pokemon.id]);
 
   return (
     <Layout title={pokemon.name}>
-      <div className="mt-2 flex gap-2 justify-center">
-        <Card isHoverable className="relative">
+      <div className="mt-2 flex flex-col justify-center gap-2 md:flex-row">
+        <Card
+          isHoverable
+          className="w-full flex justify-center items-center md:max-w-[300px]"
+        >
           <Image
             radius="lg"
             alt={pokemon.name}
@@ -49,23 +51,25 @@ const PokemonByNamePage: NextPage<Props> = ({ pokemon }) => {
           />
         </Card>
 
-        <Card shadow="sm" isHoverable className="p-3">
-          <CardHeader className="flex justify-between">
-            <h1 className="font-bold uppercase text-3xl">{pokemon.name}</h1>
+        <Card shadow="sm" isHoverable className="w-full max-w-max p-3">
+          <CardHeader>
+            <h1 className="font-bold uppercase text-3xl mr-auto">
+              {pokemon.name}
+            </h1>
 
             <Button
-              radius="sm"
-              variant={isInFavorites ? "ghost" : "solid"}
+              isIconOnly
+              color="danger"
+              aria-label="Like"
               onClick={onToggleFavorite}
-              className="w-[200px] hover:bg-gradient-to-tr hover:from-pink-500 hover:to-yellow-500 text-white shadow-lg"
             >
-              {isInFavorites ? "En favoritos" : "Guardar en favoritos"}
+              <HeartIcon filled={isInFavorites} />
             </Button>
           </CardHeader>
 
           <CardBody>
             <p className="text-xl">Sprites:</p>
-            <div className="flex flex-row">
+            <div className="flex flex-row flex-wrap justify-center items-center">
               <Image
                 radius="lg"
                 isZoomed
