@@ -28,6 +28,7 @@ export const Layout = ({ title, children }: Props) => {
           content={`Esta el la página sobre ${title}`}
         />
         <meta property="og:image" content={`${origin}/images/banner.png`} />
+        <meta property="og:image" content="/images/banner.png" />
       </Head>
 
       <Navbar />
